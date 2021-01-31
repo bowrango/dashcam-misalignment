@@ -3,6 +3,7 @@ import cv2 as cv
 
 from sklearn.neural_network import MLPRegressor
 
+
 def encode_features(video_f, watch=False):
     # put the cropped grey-scale images into a 2D array
     # each row represents the features for the image
@@ -26,13 +27,24 @@ def encode_features(video_f, watch=False):
     return features
 
 
-def read_angles(angles_f):
-    return np.loadtxt(angles_f)
+# all nan occurrences are replaced by the previous real angle value
+# since angles frame by frame don't change much, the previous angle is a better approx than 0s
+def read_angles(angles_f, ffill=0):
+    arr = np.loadtxt(angles_f)
+
+    mask = np.isnan(arr)
+    tmp = arr[0].copy()
+    arr[0][mask[0]] = ffill
+    mask[0] = False
+    idx = np.where(~mask, np.arange(mask.shape[0])[:, None], 0)
+    out = np.take_along_axis(arr, np.maximum.accumulate(idx, axis=0), axis=0)
+    arr[0] = tmp
+    return out
 
 
 # ~~~SUPERVISED LEARNING~~~
 
-y = read_angles(f"labeled/{0}.txt")
+y = read_angles(f"labeled/{2}.txt")
 X = encode_features(f"tests/{0}.avi")
 
 true_y = read_angles(f"labeled/{1}.txt")

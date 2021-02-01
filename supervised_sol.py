@@ -1,9 +1,14 @@
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 from sklearn.neural_network import MLPRegressor
 
 
+# training data is focused on the boundary region of the car front and the road
+# this should hopefully emphasis mis-alignments of the camera and car frames
+
+# TODO: experiment with image processing
 def encode_features(video_f, watch=False):
     # put the cropped grey-scale images into a 2D array
     # each row represents the features for the image
@@ -15,22 +20,32 @@ def encode_features(video_f, watch=False):
         success, frame = cap.read()
         if frame is None:
             break
-        cropped_frame = frame[1:100, 1:100]
-        # cropped grey image
-        cropped_grey = cv.cvtColor(cropped_frame, cv.COLOR_BGR2GRAY)
+
+        # resize, greyscale, crop
+        frame = cv.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        frame_grey = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+
+        shape = np.shape(frame_grey)
+        cropped_frame = frame_grey[300:350, 200:400]
+
+        # consider blurring?
+
+        # roi
+        rect = cv.rectangle(frame, (200, 300), (400, 350), (255, 0, 0), 2)
         if watch:
-            cv.imshow('grey', frame)
+            cv.imshow('grey', cropped_frame)
         k = cv.waitKey(30) & 0xff
         if k == 27:
             break
-        features.append(cropped_grey.flatten())
-    return features
+        features.append(frame_grey.flatten())
+    return np.asarray(features)
 
 
 # all nan occurrences are replaced by the previous real angle value
 # since angles frame by frame don't change much, the previous angle is a better approx than 0s
 def read_angles(angles_f, ffill=0):
-    arr = np.loadtxt(angles_f)
+    # high precision isn't necessary
+    arr = np.loadtxt(angles_f, dtype='float16')
 
     mask = np.isnan(arr)
     tmp = arr[0].copy()
@@ -42,20 +57,42 @@ def read_angles(angles_f, ffill=0):
     return out
 
 
+def get_mse(gt, test):
+    return np.mean(np.mean((gt - test) ** 2, axis=0))
+
+
 # ~~~SUPERVISED LEARNING~~~
 
-y = read_angles(f"labeled/{2}.txt")
-X = encode_features(f"tests/{0}.avi")
+# train on videos 0-3, test on video 4
+X = []
+Y = []
+for i in range(4):
+    y = read_angles(f"labeled/{i}.txt")
+    x = encode_features(f"tests/{i}.avi", watch=True)
 
-true_y = read_angles(f"labeled/{1}.txt")
-test_X = encode_features(f"tests/{1}.avi")
+    X.extend(x)
+    Y.extend(y)
 
-# handle for nan occurrences
-# Shape X: (1200, 9801)
-# Shape y: (1200, 2)
+np.save('X', X)
+np.save('Y', Y)
 
-# TODO: Pre-cache video frame for debugging and consider resizing images
+X = np.load('X.npy')
+y = np.load('Y.npy')
+
+# true_y = read_angles(f"labeled/{4}.txt")
+# test_X = encode_features(f"tests/{4}.avi")
+
+# TODO: Pre-cache video frames for debugging and consider resizing images
 clf = MLPRegressor()
 clf.fit(X, y)
+plt.plot(clf.loss_curve_)
+plt.show()
 
-print(clf.predict(test_X))
+# pred_y = clf.predict(test_X)
+# np.save('pred_y', pred_y)
+#
+# zero_mse = get_mse(true_y, np.zeros_like(true_y))
+# mse = get_mse(true_y, pred_y)
+#
+# percent_err_vs_all_zeros = 100 * (mse / zero_mse)
+# print(f'YOUR ERROR SCORE IS {percent_err_vs_all_zeros:.2f}% (lower is better)')

@@ -1,10 +1,10 @@
-# === OBJECTIVE ===
+ === OBJECTIVE ===
 
 Deliver 5 labels called 5.txt to 9.txt.
 These labels should be the 2D array of pitch and yaw angles of direction of the travel in camera frame
 We need to predict the pitch and yaw angles by which the openpilot camera is mis-aligned from the car frame.
 
-# === APPROACH ===
+ === APPROACH ===
 
 Images should be cropped to focus on edge of vehicle against road
 This should emphasis changes between the car frame and openpilot
@@ -14,7 +14,7 @@ Cropped images will still have pitch/yaw mis-alignments from un-cropped image. W
 Let's try and implement optical flow to get a vectorized idea of how the scenery is changing as the car moves
 Perhaps we can then convert these to radians using something hacky :)
 
-# ===  REFERENCES ===
+ ===  REFERENCES ===
 
 We are in the camera frame, what is the mis-alignment of the car frame, which is the direction of travel.
 

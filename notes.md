@@ -17,9 +17,9 @@ Recent Work
 - This paper provides a method to calculate the misalignment of the VCS w.r.t the CCS. See Algorithm 3.
   http://web.cse.ohio-state.edu/~sinha.43/publications/conf/ipsn19-smartdashcam.pdf
  
-  * uses the forwards and lateral vanishing points (LVP) (FVP)
-  * compares to manual calibration as ground truth
-  * The angles derived by SmartDashCam have errors less than 7 degrees. This is high!
+  * estimates use forwards and lateral vanishing point (FVP) (LVP) 
+  * manual calibration is the ground truth
+  * angle predictions have errors less than 7 degrees. Mean is ~2 deg.
 
    
 

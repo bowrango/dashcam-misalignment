@@ -2,7 +2,7 @@
 Recent Work
 ------
 
-- A nice article on sensor calibration, a few cool points: 
+- A nice article on sensor calibration, a few cool points:
   https://medium.com/lyftself-driving/high-fidelity-sensor-calibration-for-autonomous-vehicles-6af06eba4c26
 
 - A paper covering the impact of camera misalignment on lane keeping assist systems:

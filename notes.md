@@ -21,8 +21,15 @@ Recent Work
   * manual calibration is the ground truth
   * angle predictions have errors less than 7 degrees. Mean is ~2 deg.
 
-- Blog post from comma about lateral planning:
+- Blog post from comma.ai about lateral planning:
   https://blog.comma.ai/end-to-end-lateral-planning/
+ 
+ Methodology 
+------
 
+From the research thus far it seems the simplist approach is to track vanishing points in the image and relate those to the relative rotation of the camera.
+
+- Paper about localizing position from a single image using pre-labeled data. Some nice graphics. The most relevent bit to us is Equation 3. 
+  https://arxiv.org/pdf/2003.10664.pdf
    
 

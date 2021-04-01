@@ -31,5 +31,18 @@ From the research thus far it seems the simplist approach is to track vanishing 
 
 - Paper about localizing position from a single image using pre-labeled data. Some nice graphics. The most relevent bit to us is Equation 3. 
   https://arxiv.org/pdf/2003.10664.pdf
-   
+
+- Slideshow on camera geometry. Descibes method to get rotation from vanishing point:
+  https://www.cs.princeton.edu/courses/archive/fall13/cos429/lectures/11-epipolar
+
+The intrinsic matrix K projects a point in camera coordinates onto the image plane. It requires three parameters:
+
+    * focal length of camera 
+    * pixel width and height, the physical dimension of each pixel 
+    * the image center 
+
+  1. Solve for K using three orthogonal vanishing points
+  2. Get rotation directly from vanishing points once K is known
+
+
 

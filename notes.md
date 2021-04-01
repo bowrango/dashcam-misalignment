@@ -22,7 +22,7 @@ Recent Work
   * angle predictions have errors less than 7 degrees. Mean is ~2 deg.
 
 - Blog post from comma about lateral planning:
-- https://blog.comma.ai/end-to-end-lateral-planning/
+  https://blog.comma.ai/end-to-end-lateral-planning/
 
    
 

@@ -1,32 +1,16 @@
- === OBJECTIVE ===
 
-Deliver 5 labels called 5.txt to 9.txt.
-These labels should be the 2D array of pitch and yaw angles of direction of the travel in camera frame
-We need to predict the pitch and yaw angles by which the openpilot camera is mis-aligned from the car frame.
+Frames of Reference
+------
 
- === APPROACH ===
-
-Images should be cropped to focus on edge of vehicle against road
-This should emphasis changes between the car frame and openpilot
-Use MLPClassifer from sklearn.neural_network to train (supervised)
-Cropped images will still have pitch/yaw mis-alignments from un-cropped image. Will this cause problems?
-
-Let's try and implement optical flow to get a vectorized idea of how the scenery is changing as the car moves
-Perhaps we can then convert these to radians using something hacky :)
-
- ===  REFERENCES ===
-
-We are in the camera frame, what is the mis-alignment of the car frame, which is the direction of travel.
+Video is from the perspective of the camera, what is the misalignment to the car frame? The camera frame and car frame have different directions of travel.
 
 Device Frame (Camera Frame): aligned with the road-facing camera used by openpilot.
 Car Frame: aligned with the car's direction of travel and road plane when going straight on a flat road
 
-The origin of the car frame is defined to be directly below the device frame, such that it is on the road plane.
-The orientation of this frame is not always aligned with the direction of travel or the road plane
-Suspension and other effects can mis-align the two frames while driving
+ - The origin of the car frame is defined to be directly below the device frame, such that it is on the road plane.
+ - Camera frame and car frame will be misaligned due to installation and suspension effects
 
-Images need to be in calibrated frame; defined to be aligned with car frame in pitch and yaw, and aligned with device frame in roll.
-The origin is the same as the device frame
+Openpilot needs images to be in a calibrated frame; defined to be aligned with car frame in pitch and yaw, and aligned with device frame in roll.
 
 Welcome to the comma.ai Calibration Challenge!
 ======

@@ -35,11 +35,14 @@ From the research thus far it seems the simplist approach is to track vanishing 
 - Slideshow on camera geometry. Descibes method to get rotation from vanishing point:
   https://www.cs.princeton.edu/courses/archive/fall13/cos429/lectures/11-epipolar
 
+- Calculation of rotation matrix from vanishing points and focal length; see (6):
+  https://annals-csis.org/proceedings/2012/pliks/110.pdf
+
 The intrinsic matrix K projects a point in camera coordinates onto the image plane. It requires three parameters:
 
-    * focal length of camera 
-    * pixel width and height, the physical dimension of each pixel 
-    * the image center 
+  * focal length of camera 
+  * pixel width and height, the physical dimension of each pixel 
+  * the image center 
 
   1. Solve for K using three orthogonal vanishing points
   2. Get rotation directly from vanishing points once K is known

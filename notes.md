@@ -3,8 +3,8 @@ Recent Work
 ------
 
 - A nice article on sensor calibration, a few cool points:
-  https://medium.com/lyftself-driving/high-fidelity-sensor-calibration-for-autonomous-vehicles-6af06eba4c26
-
+- https://medium.com/lyftself-driving/high-fidelity-sensor-calibration-for-autonomous-vehicles-6af06eba4c26
+  
 - A paper covering the impact of camera misalignment on lane keeping assist systems:
   https://www.tandfonline.com/doi/full/10.1080/15472450.2020.1822174
 
@@ -47,5 +47,16 @@ The intrinsic matrix K projects a point in camera coordinates onto the image pla
   1. Solve for K using three orthogonal vanishing points
   2. Get rotation directly from vanishing points once K is known
 
+Consider Convolutional Neural Networks (CNN)
+------
+
+A perspective transformation can be used to model yaw and pitch misalignments as the camera moves. The 3D perspective mapping can be modelled as a modified rotation matrix as seen in [this paper](https://ghassanalregibdotcom.files.wordpress.com/2016/10/santoro2012_mmsp1.pdf) as Equation (5). We can assume there is a perspective change across each consecutive frame, and that the roll is always 0 deg. because the camera is fixed to the vehicle. The proposed architecture would utilize a CNN to estimate the rotation transformation parameters: 
+
+ * This problem could be formulated as a classification task (0 - 360 deg.)
+ * Separate layers for pitch and yaw angles?
+ * Transfer learning with ResNet50 as shown in [this article](https://d4nst.github.io/2017/01/12/image-orientation/)
+ * Fine tune on labeled training data
+
+[This paper](https://arxiv.org/pdf/1611.04298.pdf) might be a helpful aid. 
 
 

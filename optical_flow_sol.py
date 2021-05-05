@@ -3,19 +3,29 @@ import cv2 as cv
 
 # ~~~LUCAS-KANADE OPTICAL FLOW~~~
 
-# See if there are better video formats, this is super slow to convert online
-cap = cv.VideoCapture('labeled/0.mp4')
-
 # params for ShiTomasi corner detection
 feature_params = dict(maxCorners=10,
                       qualityLevel=0.3,
-                      minDistance=50,
+                      minDistance=100,
                       blockSize=7)
 
 # params for lucas kanade optical flow
 lk_params = dict(winSize=(15, 15),
                  maxLevel=2,
                  criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
+
+def auto_canny(image, sigma=0.33):
+    # compute the median of the single channel pixel intensities
+    v = np.median(image)
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edged = cv.Canny(image, lower, upper)
+    cv.imshow('autocanny', edged)
+    return edged
+
+# See if there are better video formats, this is super slow to convert online
+cap = cv.VideoCapture('labeled/0.mp4')
 
 # create some random colors for tracking
 color = np.random.randint(0, 255, (100, 3))
@@ -48,6 +58,14 @@ while 1:
     good_new = p1[st == 1]
     good_old = p0[st == 1]
 
+    # === Experiment with Canny Edge Detection for Tracking the Dash Horizon ==
+    canny_img = frame_gray[tl_corner[0]:br_corner[0], tl_corner[1]:br_corner[1]]
+    canny_img = cv.GaussianBlur(canny_img, (3,3), 0)
+    auto_canny(canny_img)
+    canny_img = cv.Canny(canny_img, 200, 255)
+    cv.imshow('mycanny', canny_img)
+    
+    
     # get current transform matrix
     matrix = cv.estimateAffine2D(good_old, good_new)
     # draw the tracks

@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+import time
 
 def auto_canny(image, sigma=0.33, watch=False):
     # compute the median of the single channel pixel intensities
@@ -31,6 +32,7 @@ def read_angles(angles_f, ffill=0):
     return angles
 
 def extract_features(video_f, watch=False):
+    start = time.time()
 
     # returned features are stored in a (1200, 28618) binary sparse array representing the edge of the dash across frames
     #   - region of interest is (41, 698). 41 * 698 = 28618 features per frame
@@ -44,6 +46,7 @@ def extract_features(video_f, watch=False):
     cap.release()
 
     # rectangular region to track features
+    # TODO: This hard-coded boundary is not good. Ideally this would be automaticaly identified. 
     tl_corner = (int(np.rint(5*H/6 - 20)), int(np.rint(W/5)))
     br_corner = (int(np.rint(H - 125)), int(np.rint(4*W/5)))
 
@@ -52,7 +55,7 @@ def extract_features(video_f, watch=False):
         success, frame = cap.read()
         if success:
             # === Canny Edge Detection for Tracking the Dash Horizon ==
-            kernel = (3,3)
+            kernel = (1,5) # TODO: experiment with vert/horiz kernels
             frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             canny_img = frame_gray[tl_corner[0]:br_corner[0], tl_corner[1]:br_corner[1]]
             canny_img = cv.GaussianBlur(canny_img, kernel, 0)
@@ -71,7 +74,9 @@ def extract_features(video_f, watch=False):
         else:
             cap.release()
             break
-        
+    
+    end = time.time()
+    print(f"Processing Time: {round(end-start,2)} (s)")
     return np.asarray(features)
 
 # 1. Extract features from training videos using Canny edge detection
@@ -81,7 +86,7 @@ def extract_features(video_f, watch=False):
 if __name__ == "__main__":
 
     # TODO: should be able to handle .avi files, use .mp4 for now 
-    X = extract_features("labeled/0.mp4", watch=False)
+    X = extract_features("labeled/0.mp4", watch=True)
     y = read_angles("labeled/0.txt")
     
     print(X.shape)

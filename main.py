@@ -12,14 +12,14 @@ def auto_canny(image, sigma=0.33, watch=False):
         cv.imshow('autocanny', edged)
     return edged
 
-
 def read_angles(angles_f, ffill=0):
-    # high precision isn't necessary
-    arr = np.loadtxt(angles_f, dtype='float16')
 
-    # values are NaN when vehicle speed is > ~4 m/s. 
-    # replace these occurances with previous real angle value
-    # assumption is the angle doesnt change much during low speeds 
+    # returned angles are a (1200, 2) numpy array
+    #   - values are NaN when vehicle speed is < ~4 m/s. 
+    #   - replace these occurances with previous real angle value
+    #   - assumption is the angle doesnt change much during low speeds 
+
+    arr = np.loadtxt(angles_f, dtype='float16')
     mask = np.isnan(arr)
     tmp = arr[0].copy()
     arr[0][mask[0]] = ffill
@@ -27,12 +27,12 @@ def read_angles(angles_f, ffill=0):
     idx = np.where(~mask, np.arange(mask.shape[0])[:, None], 0)
     angles = np.take_along_axis(arr, np.maximum.accumulate(idx, axis=0), axis=0)
     arr[0] = tmp
+    
     return angles
-
 
 def extract_features(video_f, watch=False):
 
-    # returned features are stored in a (1200, 28618) binary sparse array representing the edge of the dash for each frame
+    # returned features are stored in a (1200, 28618) binary sparse array representing the edge of the dash across frames
     #   - region of interest is (41, 698). 41 * 698 = 28618 features per frame
     #   - training/test videos are 1 minute at 20 fps. 60 * 20 = 1200 observations per video
     features = []
@@ -74,11 +74,15 @@ def extract_features(video_f, watch=False):
         
     return np.asarray(features)
 
+# 1. Extract features from training videos using Canny edge detection
+# 2. Read in labeled angles
+# 3. Train RNN
 
 if __name__ == "__main__":
 
     # TODO: should be able to handle .avi files, use .mp4 for now 
     X = extract_features("labeled/0.mp4", watch=False)
     y = read_angles("labeled/0.txt")
+    
     print(X.shape)
     print(y.shape)

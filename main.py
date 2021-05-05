@@ -76,5 +76,9 @@ def extract_features(video_f, watch=False):
 
 
 if __name__ == "__main__":
+
+    # TODO: should be able to handle .avi files, use .mp4 for now 
     X = extract_features("labeled/0.mp4", watch=False)
+    y = read_angles("labeled/0.txt")
     print(X.shape)
+    print(y.shape)

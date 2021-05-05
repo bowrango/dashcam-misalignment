@@ -1,16 +1,10 @@
 
-Frames of Reference
-------
+Methodology
+-----
 
-Video is from the perspective of the camera, what is the misalignment to the car frame? The camera frame and car frame have different directions of travel.
+Canny edge detection is used to track where the dash horizon meets with the road. Detection parameters need to be tuned better. Tracking of this boundary needs to be accurate and precise to help the NN converge. 
 
-Device Frame (Camera Frame): aligned with the road-facing camera used by openpilot.
-Car Frame: aligned with the car's direction of travel and road plane when going straight on a flat road
-
- - The origin of the car frame is defined to be directly below the device frame, such that it is on the road plane.
- - Camera frame and car frame will be misaligned due to installation and suspension effects
-
-Openpilot needs images to be in a calibrated frame; defined to be aligned with car frame in pitch and yaw, and aligned with device frame in roll.
+Perhaps a RNN can train on the sequential points from the boundary movement using the labeled angles. 
 
 Welcome to the comma.ai Calibration Challenge!
 ======

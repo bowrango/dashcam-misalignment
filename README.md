@@ -4,7 +4,7 @@ Methodology
 
 ![alt text](https://github.com/bowrango/calib_challenge/blob/main/docs/pipeline.jpeg)
 
-$$x_{(t)}$$
+$x_{(t)}$
 
 Context
 ------

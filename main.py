@@ -27,6 +27,7 @@ def auto_canny(image, sigma=0.33, watch=False):
         cv.imshow('auto-canny', auto_edge)
     return otsu_edge
 
+
 def read_angles(angles_f, ffill=0):
 
     # returned angles are a (1200, 2) numpy array
@@ -44,6 +45,7 @@ def read_angles(angles_f, ffill=0):
     arr[0] = tmp
     
     return angles
+
 
 def extract_features(video_f, watch=False):
     start = time.time()
@@ -91,11 +93,7 @@ def extract_features(video_f, watch=False):
     
     end = time.time()
     print(f"Processing Time: {round(end-start,2)} (s)")
-<<<<<<< HEAD
     return np.asarray(features, dtype=np.float32) # float32 for converting torch FloatTensor
-=======
-    return np.asarray(features, dtype=np.float32)
->>>>>>> 4101fb624fe3a161ecac6982fb510fe2f2ed0c70
 
 # 1. Extract features from training videos using Canny edge detection
 # 2. Read in labeled angles
@@ -103,13 +101,12 @@ def extract_features(video_f, watch=False):
 
 if __name__ == "__main__":
     from rnn import RNN
-<<<<<<< HEAD
 
     # TODO: should be able to handle .avi files, use .mp4 for now 
-    # X = extract_features("labeled/0.mp4", watch=True)
+    X = extract_features("labeled/0.mp4", watch=True)
     # np.save('X', X)
-
-    X = np.load('X.npy')
+    # X = np.load('X.npy')
+    
     Y = read_angles("labeled/0.txt")
 
     pitch_gt = Y[:,0]
@@ -143,56 +140,10 @@ if __name__ == "__main__":
         h_state = h_state.data        # repack the hidden state, break the connection from last iteration
 
         loss = loss_func(prediction, y_t)       # calculate loss
-=======
-
-    # hyper Parameters
-    TIME_STEP = 10      # rnn time step
-    INPUT_SIZE = 28616      # rnn input size
-    LR = 0.02           # learning rate
-
-    # TODO: should be able to handle .avi files, use .mp4 for now 
-    # X = extract_features("labeled/0.mp4", watch=False)
-    Y = read_angles("labeled/0.txt")
-    
-    rnn = RNN()
-    print(rnn)
-
-    optimizer = torch.optim.Adam(rnn.parameters(), lr=LR)   # optimize all cnn parameters
-    loss_func = nn.MSELoss()
-
-    h_state = None      # for initial hidden state
-
-    plt.figure(1, figsize=(12, 5))
-    plt.ion()           # continuously plot
-
-    for step in range(100):
-        start, end = step * np.pi, (step+1)*np.pi   # time range
-        # use sin predicts cos
-        steps = np.linspace(start, end, TIME_STEP, dtype=np.float32, endpoint=False)  # float32 for converting torch FloatTensor
-        x_np = np.sin(steps)
-        y_np = np.cos(steps)
-
-        # correct dimension reference
-        z = torch.from_numpy(x_np[np.newaxis, :, np.newaxis])
-
-        # TODO: these dimensions are not correct 
-        x = X[step] # shape (batch, time_step, input_size)
-        x_t = torch.from_numpy(x[np.newaxis, :, np.newaxis])
-
-        y = Y[step]
-        y_t = torch.from_numpy(y[np.newaxis, :, np.newaxis])
-
-        prediction, h_state = rnn(x_t, h_state)   # rnn output
-        # !! next step is important !!
-        h_state = h_state.data        # repack the hidden state, break the connection from last iteration
-
-        loss = loss_func(prediction, y)         # calculate loss
->>>>>>> 4101fb624fe3a161ecac6982fb510fe2f2ed0c70
         optimizer.zero_grad()                   # clear gradients for this training step
         loss.backward()                         # backpropagation, compute gradients
         optimizer.step()                        # apply gradients
 
-<<<<<<< HEAD
         print(f"MSE Loss: {loss}")
         
     plt.figure(1, figsize=(12, 5))
@@ -205,12 +156,3 @@ if __name__ == "__main__":
     plt.plot(np.array(range(len(X))), yaw_gt, 'b')
     plt.show()
 
-=======
-        # plotting
-        plt.plot(steps, y_np.flatten(), 'r-')
-        plt.plot(steps, prediction.data.numpy().flatten(), 'b-')
-        plt.draw(); plt.pause(0.05)
-
-    plt.ioff()
-    plt.show()
->>>>>>> 4101fb624fe3a161ecac6982fb510fe2f2ed0c70

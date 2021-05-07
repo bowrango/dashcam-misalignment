@@ -13,6 +13,7 @@ Methodology
     - hidden state tensor: shape (1, 1, 28618) (n_layers, batch, hidden_size)
     - prediction tensor: shape(1, 1, 2) (batch, time_step, output_size)
     - Pytorch Adam optimizer; MSELoss objective (squared L2 norm)
+    - 80/20 train test split
  
 Context
 ------

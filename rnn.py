@@ -31,3 +31,6 @@ class RNN(nn.Module):
         for time_step in range(r_out.size(1)):    # calculate output for each time step
             outs.append(self.out(r_out[:, time_step, :]))
         return torch.stack(outs, dim=1), h_state
+
+            
+        

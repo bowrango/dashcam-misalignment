@@ -7,6 +7,8 @@ import pickle
 import time
 import matplotlib.pyplot as plt
 
+from rnn import RNN
+
 
 def auto_canny(image, sigma=0.33, watch=False):
 
@@ -76,8 +78,11 @@ def extract_features(video_f, watch=False):
             canny_gray = cv.cvtColor(canny_img, cv.COLOR_BGR2GRAY)
             canny_blur = cv.GaussianBlur(canny_gray, kernel, 0)
 
-            edges = auto_canny(canny_blur, watch=watch)
-            features.append(edges.flatten())
+            edge = auto_canny(canny_blur, watch=watch)
+            edge = np.divide(edge, 255)   # binary 0-1 sparse matrix
+            intensity = np.sum(edge, axis=None)
+            print(intensity)
+            features.append(edge.flatten())
 
             # draw rect on video 
             if watch:
@@ -100,59 +105,61 @@ def extract_features(video_f, watch=False):
 # 3. Train RNN
 
 if __name__ == "__main__":
-    from rnn import RNN
-
-    # TODO: should be able to handle .avi files, use .mp4 for now 
-    X = extract_features("labeled/0.mp4", watch=True)
-    # np.save('X', X)
-    # X = np.load('X.npy')
     
-    Y = read_angles("labeled/0.txt")
-
-    pitch_gt = Y[:,0]
-    yaw_gt = Y[:,1]
-
     torch.manual_seed(1)    # reproducible
-
     rnn = RNN()
     optimizer = torch.optim.Adam(rnn.parameters(), lr=0.02)   # optimize all cnn parameters
     loss_func = nn.MSELoss()
     h_state = None      # for initial hidden state
 
-    pitch = np.zeros(len(X))
-    yaw = np.zeros(len(X))
-
-    # sequential training one frame at a time
-    for step in range(len(X)):
+    # == training loop over 1 video(s) ==
+    for i in range(1):
+        X = np.load(f"X{i}.npy")
+        Y = np.load(f"Y{i}.npy")
+        s = np.array(range(len(X)))
         
-        x = X[step].reshape(1, 1, 28618) # shape (batch, time_step, input_size)
-        x_t = torch.from_numpy(x)
+        train_mse = []
 
-        y = Y[step].reshape(1, 1, 2)
-        y_t = torch.from_numpy(y)
+        n = X.shape[1]
+        m = Y.shape[1]
+        batch = 1
+        time_step = 1
 
-        # rnn must take tensors as input  
-        prediction, h_state = rnn(x_t, h_state)   # rnn output
-        pitch[step] = prediction.data.numpy().flatten()[0]
-        yaw[step] = prediction.data.numpy().flatten()[1]
+        theta = np.zeros(len(X))
+        phi = np.zeros(len(X))
+        #  one frame at a time
+        for step in range(len(X)):
+            
+            x = X[step].reshape(batch, time_step, n) # shape (batch, time_step, input_size)
+            x_t = torch.from_numpy(x)
+
+            y = Y[step].reshape(batch, time_step, m)
+            y_t = torch.from_numpy(y)
+
+            prediction, h_state = rnn(x_t, h_state)  
+            # !! next step is important !!
+            h_state = h_state.data        # repack the hidden state, break the connection from last iteration
+
+            loss = loss_func(prediction, y_t)
+            optimizer.zero_grad()                   # clear gradients for this training step
+            loss.backward()                         # backpropagation, compute gradients
+            optimizer.step()                        # apply gradients
+
+            train_mse.append(np.float32(loss.data))
+            theta[step] = prediction.data.numpy().flatten()[0]
+            phi[step] = prediction.data.numpy().flatten()[1]
+        
+
+        plt.figure()
+        plt.plot(s, theta*(180/np.pi), 'r.') # in deg.
+        plt.plot(s, Y[:,0]*(180/np.pi), 'b.') # groundtruth
+        plt.legend(['prediction', 'groundtruth'])
+        plt.ylim([1, 3])
+        plt.xlabel('Training Steps')
+        plt.ylabel('Pitch Angle (deg.)')
+        plt.show()
+       
+
+
     
-        # !! next step is important !!
-        h_state = h_state.data        # repack the hidden state, break the connection from last iteration
-
-        loss = loss_func(prediction, y_t)       # calculate loss
-        optimizer.zero_grad()                   # clear gradients for this training step
-        loss.backward()                         # backpropagation, compute gradients
-        optimizer.step()                        # apply gradients
-
-        print(f"MSE Loss: {loss}")
         
-    plt.figure(1, figsize=(12, 5))
-    plt.plot(np.array(range(len(X))), pitch, 'r')
-    plt.plot(np.array(range(len(X))), pitch_gt, 'b')
-    plt.show()
-
-    plt.figure(2, figsize=(12, 5))
-    plt.plot(np.array(range(len(X))), yaw, 'r')
-    plt.plot(np.array(range(len(X))), yaw_gt, 'b')
-    plt.show()
-

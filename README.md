@@ -1,11 +1,20 @@
-
 Methodology
------
+------
 
 ![alt text](https://github.com/bowrango/calib_challenge/blob/main/docs/pipeline.jpeg)
 
-$$x_{(t)}$$
-
+1. Feature extraction from video using Canny edge detection:
+    - cropped; grayscale; Gaussian (3,3) blur
+    - Otsu's method for Canny thresholds
+    - output sparse array (per training video): shape (1200, 28618) 
+    
+2. Sequential training on RNN:
+    - input tensor: shape (1, 1, 28618) (batch, time_step, input_size)
+    - hidden state tensor: shape (1, 1, 28618) (n_layers, batch, hidden_size)
+    - prediction tensor: shape(1, 1, 2) (batch, time_step, output_size)
+    - Pytorch Adam optimizer; MSELoss objective (squared L2 norm)
+    - 80/20 train test split
+ 
 Context
 ------
 The devices that run [openpilot](https://github.com/commaai/openpilot/) are not mounted perfectly. The camera

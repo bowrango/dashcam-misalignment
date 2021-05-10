@@ -69,6 +69,7 @@ def extract_features(video_f, watch=False):
     br_corner = (int(np.rint(H - 125)), int(np.rint(4*W/5)))
 
     cap = cv.VideoCapture(video_f)
+    i = [] 
     while cap.isOpened:
         success, frame = cap.read()
         if success:
@@ -81,7 +82,7 @@ def extract_features(video_f, watch=False):
             edge = auto_canny(canny_blur, watch=watch)
             edge = np.divide(edge, 255)   # binary 0-1 sparse matrix
             intensity = np.sum(edge, axis=None)
-            print(intensity)
+            i.append(intensity)
             features.append(edge.flatten())
 
             # draw rect on video 
@@ -98,7 +99,7 @@ def extract_features(video_f, watch=False):
     
     end = time.time()
     print(f"Processing Time: {round(end-start,2)} (s)")
-    return np.asarray(features, dtype=np.float32) # float32 for converting torch FloatTensor
+    return np.asarray(features, dtype=np.float32), np.asarray(i, dtype=np.int16) # float32 for converting torch FloatTensor
 
 # 1. Extract features from training videos using Canny edge detection
 # 2. Read in labeled angles
@@ -114,6 +115,7 @@ if __name__ == "__main__":
 
     # == training loop over 1 video(s) ==
     for i in range(1):
+        # X, intensity = extract_features('labeled/0.mp4', watch=True)
         X = np.load(f"X{i}.npy")
         Y = np.load(f"Y{i}.npy")
         s = np.array(range(len(X)))
@@ -137,6 +139,7 @@ if __name__ == "__main__":
             y_t = torch.from_numpy(y)
 
             prediction, h_state = rnn(x_t, h_state)  
+            
             # !! next step is important !!
             h_state = h_state.data        # repack the hidden state, break the connection from last iteration
 
@@ -149,16 +152,73 @@ if __name__ == "__main__":
             theta[step] = prediction.data.numpy().flatten()[0]
             phi[step] = prediction.data.numpy().flatten()[1]
         
-
-        plt.figure()
+    
+        # === TRAINING RESULTS FOR EACH VIDEO ===
+        plt.figure(1)
+        plt.subplot(211)
         plt.plot(s, theta*(180/np.pi), 'r.') # in deg.
         plt.plot(s, Y[:,0]*(180/np.pi), 'b.') # groundtruth
-        plt.legend(['prediction', 'groundtruth'])
-        plt.ylim([1, 3])
-        plt.xlabel('Training Steps')
         plt.ylabel('Pitch Angle (deg.)')
+        # plt.ylim([1, 3])
+        plt.legend(['predicted', 'groundtruth'])
+
+        plt.subplot(212)
+        plt.plot(s, phi*(180/np.pi), 'r.') # in deg.
+        plt.plot(s, Y[:,1]*(180/np.pi), 'b.') # groundtruth
+        plt.ylabel('Yaw Angle (deg.)')
+        # plt.ylim([1, 3])
+        plt.xlabel('Training Frame')    
         plt.show()
-       
+
+        plt.figure(2)
+        plt.plot(s, intensity, 'k.')
+        plt.ylabel('Edge Intensity')
+        plt.xlabel('Frame')
+        plt.show()
+
+    # === testing  === 
+    X = np.load(f"X4.npy")
+    Y = np.load(f"Y4.npy")
+    s = np.array(range(len(X)))
+    
+    test_mse = []
+    n = X.shape[1]
+    m = Y.shape[1]
+    batch = 1
+    time_step = 1
+
+    theta = np.zeros(len(X))
+    phi = np.zeros(len(X))
+    #  one frame at a time
+    for step in range(len(X)):
+        
+        x = X[step].reshape(batch, time_step, n) # shape (batch, time_step, input_size)
+        x_t = torch.from_numpy(x)
+
+        y = Y[step].reshape(batch, time_step, m)
+        y_t = torch.from_numpy(y)
+
+        prediction, h_state = rnn(x_t, h_state)  
+        h_state = h_state.data
+        test_mse.append(np.float32(loss.data))
+        theta[step] = prediction.data.numpy().flatten()[0]
+        phi[step] = prediction.data.numpy().flatten()[1]
+        
+    
+    # === TESTING RESULTS ===
+    plt.figure(1)
+    plt.subplot(211)
+    plt.plot(s, theta*(180/np.pi), 'r.') # in deg.
+    plt.plot(s, Y[:,0]*(180/np.pi), 'b.') # groundtruth
+    plt.ylabel('Pitch Angle (deg.)')
+    plt.legend(['predicted', 'groundtruth'])
+
+    plt.subplot(212)
+    plt.plot(s, phi*(180/np.pi), 'r.') # in deg.
+    plt.plot(s, Y[:,1]*(180/np.pi), 'b.') # groundtruth
+    plt.ylabel('Yaw Angle (deg.)')
+    plt.xlabel('Testing Frame')    
+    plt.show()  
 
 
     

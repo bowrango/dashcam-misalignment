@@ -114,10 +114,15 @@ if __name__ == "__main__":
     h_state = None      # for initial hidden state
 
     # == training loop over 1 video(s) ==
-    for i in range(1):
-        # X, intensity = extract_features('labeled/0.mp4', watch=True)
-        X = np.load(f"X{i}.npy")
-        Y = np.load(f"Y{i}.npy")
+    for i in range(4):
+        X, intensity = extract_features(f'labeled/{i}.mp4', watch=True)
+        Y = read_angles(f'labeled/{i}.txt')
+
+        np.save(f"X{i}.npy", X)
+        np.save(f"Y{i}.npy", Y)
+
+        # X = np.load(f"X{i}.npy")
+        # Y = np.load(f"Y{i}.npy")
         s = np.array(range(len(X)))
         
         train_mse = []
@@ -177,8 +182,8 @@ if __name__ == "__main__":
         plt.show()
 
     # === testing  === 
-    X = np.load(f"X4.npy")
-    Y = np.load(f"Y4.npy")
+    # X = np.load(f"X4.npy")
+    # Y = np.load(f"Y4.npy")
     s = np.array(range(len(X)))
     
     test_mse = []

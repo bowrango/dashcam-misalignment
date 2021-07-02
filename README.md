@@ -1,8 +1,6 @@
 Methodology
 ------
 
-![alt text](https://github.com/bowrango/calib_challenge/blob/main/docs/pipeline.jpeg)
-
 1. Feature extraction from video using Canny edge detection:
     - cropped; grayscale; Gaussian (3,3) blur
     - Otsu's method for Canny thresholds
